@@ -24,7 +24,6 @@ export declare function SidePanelContent({
 	children,
 	className,
 	onSave,
-	readOnly,
 	title,
 }: IProps): JSX.Element;
 export declare function SidePanelForm({

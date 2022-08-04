@@ -46,7 +46,6 @@ export function SidePanelContent({
 	children,
 	className,
 	onSave,
-	readOnly,
 	title,
 }: IProps) {
 	const saveProps: {
@@ -79,7 +78,7 @@ export function SidePanelContent({
 					{Liferay.Language.get('cancel')}
 				</ClayButton>
 
-				<ClayButton disabled={readOnly} {...saveProps}>
+				<ClayButton {...saveProps}>
 					{Liferay.Language.get('save')}
 				</ClayButton>
 			</ClayButton.Group>
