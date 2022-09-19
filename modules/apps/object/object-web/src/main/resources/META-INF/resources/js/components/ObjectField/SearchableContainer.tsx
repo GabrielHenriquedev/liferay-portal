@@ -12,6 +12,7 @@
  * details.
  */
 
+import ClayAlert from '@clayui/alert';
 import ClayForm, {ClayRadio, ClayRadioGroup, ClayToggle} from '@clayui/form';
 import {Card, Select} from '@liferay/object-js-components-web';
 import React, {useMemo} from 'react';
@@ -34,7 +35,6 @@ interface ISearchableProps {
 }
 
 export function SearchableContainer({
-	disabled,
 	isApproved,
 	objectField,
 	readOnly,
@@ -57,16 +57,20 @@ export function SearchableContainer({
 
 	return (
 		<Card title={Liferay.Language.get('searchable')}>
+
+			{isApproved && (<ClayAlert displayType="info"  title="Info">
+				{Liferay.Language.get('if-the-search-configuration-of-this-object-field-is-update')}
+			</ClayAlert>)}
+
 			<ClayForm.Group>
 				<ClayToggle
-					disabled={disabled}
 					label={Liferay.Language.get('searchable')}
 					name="indexed"
 					onToggle={(indexed) => setValues({indexed})}
 					toggled={objectField.indexed}
 				/>
 			</ClayForm.Group>
-
+			
 			{isSearchableString && (
 				<ClayForm.Group>
 					<ClayRadioGroup
@@ -86,13 +90,13 @@ export function SearchableContainer({
 						).toString()}
 					>
 						<ClayRadio
-							disabled={readOnly || isApproved}
+							disabled={readOnly}
 							label={Liferay.Language.get('keyword')}
 							value="true"
 						/>
 
 						<ClayRadio
-							disabled={readOnly || isApproved}
+							disabled={readOnly}
 							label={Liferay.Language.get('text')}
 							value="false"
 						/>
@@ -102,7 +106,6 @@ export function SearchableContainer({
 
 			{isSearchableString && !objectField.indexedAsKeyword && (
 				<Select
-					disabled={disabled}
 					label={Liferay.Language.get('language')}
 					name="indexedLanguageId"
 					onChange={({target: {value}}) => {
