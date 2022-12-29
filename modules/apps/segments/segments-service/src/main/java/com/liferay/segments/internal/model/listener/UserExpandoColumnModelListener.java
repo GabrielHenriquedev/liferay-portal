@@ -71,18 +71,26 @@ public class UserExpandoColumnModelListener
 		throws ModelListenerException {
 
 		try {
-			if (!_isUserCustomField(expandoColumn)) {
+			ExpandoTable expandoTable = _expandoTableLocalService.getTable(
+				expandoColumn.getTableId());
+			long organizationClassNameId =
+				_classNameLocalService.getClassNameId(User.class.getName());
+
+			if ((expandoTable.getClassNameId() != organizationClassNameId) ||
+				!ExpandoTableConstants.DEFAULT_TABLE_NAME.equals(
+					expandoTable.getName())) {
+
 				return;
 			}
 
-			EntityField userEntityField = _getUserEntityField(expandoColumn);
+			EntityField entityField = _getEntityField(expandoColumn);
 
-			if (userEntityField != null) {
-				_userEntityFields.put(
-					expandoColumn.getColumnId(), userEntityField);
+			if (entityField != null) {
+				_entityFieldsMap.put(expandoColumn.getColumnId(), entityField);
 
-				_serviceRegistration = _updateRegistry(
-					_bundleContext, _serviceRegistration, _userEntityFields);
+				_serviceRegistration.unregister();
+
+				_serviceRegistration = _register();
 			}
 		}
 		catch (PortalException portalException) {
@@ -98,11 +106,12 @@ public class UserExpandoColumnModelListener
 			return;
 		}
 
-		if (_userEntityFields.containsKey(expandoColumn.getColumnId())) {
-			_userEntityFields.remove(expandoColumn.getColumnId());
+		if (_entityFieldsMap.containsKey(expandoColumn.getColumnId())) {
+			_entityFieldsMap.remove(expandoColumn.getColumnId());
 
-			_serviceRegistration = _updateRegistry(
-				_bundleContext, _serviceRegistration, _userEntityFields);
+			_serviceRegistration.unregister();
+
+			_serviceRegistration = _register();
 		}
 	}
 
@@ -115,7 +124,7 @@ public class UserExpandoColumnModelListener
 			return;
 		}
 
-		_userEntityFields.remove(expandoColumn.getColumnId());
+		_entityFieldsMap.remove(expandoColumn.getColumnId());
 
 		onAfterCreate(expandoColumn);
 	}
@@ -125,9 +134,9 @@ public class UserExpandoColumnModelListener
 		try {
 			_bundleContext = bundleContext;
 
-			_userEntityFields = _getUserEntityFields();
+			_entityFieldsMap = _getUserEntityFields();
 
-			_serviceRegistration = _register(_bundleContext, _userEntityFields);
+			_serviceRegistration = _register();
 		}
 		catch (PortalException portalException) {
 			_log.error(portalException);
@@ -136,10 +145,10 @@ public class UserExpandoColumnModelListener
 
 	@Deactivate
 	protected void deactivate() {
-		_unregister(_serviceRegistration);
+		_serviceRegistration.unregister();
 	}
 
-	private EntityField _getUserEntityField(ExpandoColumn expandoColumn) {
+	private EntityField _getEntityField(ExpandoColumn expandoColumn) {
 		UnicodeProperties unicodeProperties =
 			expandoColumn.getTypeSettingsProperties();
 
@@ -239,62 +248,24 @@ public class UserExpandoColumnModelListener
 				));
 
 		for (ExpandoColumn expandoColumn : expandoColumnList) {
-			EntityField userEntityField = _getUserEntityField(expandoColumn);
+			EntityField entityField = _getEntityField(expandoColumn);
 
-			if (userEntityField != null) {
+			if (entityField != null) {
 				userEntityFieldsMap.put(
-					expandoColumn.getColumnId(), userEntityField);
+					expandoColumn.getColumnId(), entityField);
 			}
 		}
 
 		return userEntityFieldsMap;
 	}
 
-	private boolean _isUserCustomField(ExpandoColumn expandoColumn)
-		throws PortalException {
-
-		long userClassNameId = _classNameLocalService.getClassNameId(
-			User.class.getName());
-
-		ExpandoTable expandoTable = _expandoTableLocalService.getTable(
-			expandoColumn.getTableId());
-
-		if ((expandoTable.getClassNameId() != userClassNameId) ||
-			!ExpandoTableConstants.DEFAULT_TABLE_NAME.equals(
-				expandoTable.getName())) {
-
-			return false;
-		}
-
-		return true;
-	}
-
-	private ServiceRegistration<EntityModel> _register(
-		BundleContext bundleContext,
-		Map<Long, EntityField> userEntityFieldsMap) {
-
-		return bundleContext.registerService(
+	private ServiceRegistration<EntityModel> _register() {
+		return _bundleContext.registerService(
 			EntityModel.class,
-			new UserEntityModel(new ArrayList<>(userEntityFieldsMap.values())),
+			new UserEntityModel(new ArrayList<>(_entityFieldsMap.values())),
 			HashMapDictionaryBuilder.<String, Object>put(
 				"entity.model.name", UserEntityModel.NAME
 			).build());
-	}
-
-	private void _unregister(
-		ServiceRegistration<EntityModel> serviceRegistration) {
-
-		serviceRegistration.unregister();
-	}
-
-	private ServiceRegistration<EntityModel> _updateRegistry(
-		BundleContext bundleContext,
-		ServiceRegistration<EntityModel> serviceRegistration,
-		Map<Long, EntityField> entityFieldsMap) {
-
-		_unregister(serviceRegistration);
-
-		return _register(bundleContext, entityFieldsMap);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -304,6 +275,8 @@ public class UserExpandoColumnModelListener
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
+
+	private Map<Long, EntityField> _entityFieldsMap = new HashMap<>();
 
 	@Reference
 	private EntityModelFieldMapper _entityModelFieldMapper;
@@ -321,6 +294,5 @@ public class UserExpandoColumnModelListener
 	private SegmentsEntryLocalService _segmentsEntryLocalService;
 
 	private ServiceRegistration<EntityModel> _serviceRegistration;
-	private Map<Long, EntityField> _userEntityFields = new HashMap<>();
 
 }
