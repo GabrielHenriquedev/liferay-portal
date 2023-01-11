@@ -78,8 +78,6 @@ public class JaxRsResourceRegistryImpl implements JaxRsResourceRegistry {
 
 		@Override
 		public Object addingService(ServiceReference<Object> serviceReference) {
-			Object object = _bundleContext.getService(serviceReference);
-
 			Map<String, Object> properties = new HashMap<>();
 
 			for (String propertyKey : serviceReference.getPropertyKeys()) {
@@ -87,9 +85,11 @@ public class JaxRsResourceRegistryImpl implements JaxRsResourceRegistry {
 					propertyKey, serviceReference.getProperty(propertyKey));
 			}
 
-			_jaxRsResourceProperties.put(_getClassName(object), properties);
+			_jaxRsResourceProperties.put(
+				(String)serviceReference.getProperty("component.name"),
+				properties);
 
-			return object;
+			return serviceReference;
 		}
 
 		@Override
