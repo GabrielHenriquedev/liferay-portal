@@ -48,6 +48,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -62,7 +63,7 @@ import org.osgi.service.component.annotations.Reference;
 		"osgi.command.function=help", "osgi.command.function=list",
 		"osgi.command.function=show", "osgi.command.scope=verify"
 	},
-	service = {}
+	service = VerifyProcessTrackerOSGiCommands.class
 )
 public class VerifyProcessTrackerOSGiCommands {
 
