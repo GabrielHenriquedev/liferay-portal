@@ -224,6 +224,27 @@ public class KaleoDesignerDisplayContext {
 			_actionExecutorManager.getFunctionActionExecutorKeys());
 	}
 
+	public JSONArray getStatusesJSONArray() {
+
+		/*
+		[
+			{
+				"label": "Approved",
+				"value": 0
+			},
+			{
+				"label": "Approved", -- com.liferay.portal.kernel.workflow.WorkflowConstants.LABEL_APPROVED
+				"value": 0 -- com.liferay.portal.kernel.workflow.WorkflowConstants.STATUS_APPROVED
+			}
+
+		]
+
+
+		* */
+
+		return JSONUtil.putAll();
+	}
+
 	public KaleoDefinition getKaleoDefinition(
 		KaleoDefinitionVersion kaleoDefinitionVersion) {
 
