@@ -109,8 +109,7 @@ public class CPPriceRangeFacetsPortlet extends MVCPortlet {
 	@Reference
 	protected PortletSharedSearchRequest portletSharedSearchRequest;
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CPPriceRangeFacetsPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private CommercePriceFormatter _commercePriceFormatter;

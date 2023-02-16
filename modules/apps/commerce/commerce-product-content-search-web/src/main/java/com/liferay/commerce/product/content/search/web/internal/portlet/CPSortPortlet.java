@@ -97,7 +97,7 @@ public class CPSortPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(CPSortPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private CPContentListEntryRendererRegistry

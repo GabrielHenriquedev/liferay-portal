@@ -103,8 +103,7 @@ public class CPSearchResultsPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CPSearchResultsPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private CPContentHelper _cpContentHelper;

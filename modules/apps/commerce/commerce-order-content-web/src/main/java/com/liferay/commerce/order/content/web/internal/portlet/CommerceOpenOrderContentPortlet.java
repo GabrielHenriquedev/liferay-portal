@@ -86,7 +86,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.version=3.0"
 	},
-	service = {CommerceOpenOrderContentPortlet.class, Portlet.class}
+	service = Portlet.class
 )
 public class CommerceOpenOrderContentPortlet extends MVCPortlet {
 
@@ -173,8 +173,7 @@ public class CommerceOpenOrderContentPortlet extends MVCPortlet {
 		}
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CommerceOpenOrderContentPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private CommerceAddressService _commerceAddressService;

@@ -112,8 +112,7 @@ public class CPSpecificationOptionFacetsPortlet extends MVCPortlet {
 		return cpSpecificationOptionsFacetDisplayBuilder.build();
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CPSpecificationOptionFacetsPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private CPSpecificationOptionLocalService

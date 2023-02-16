@@ -58,7 +58,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.version=3.0"
 	},
-	service = {CPContentPortlet.class, Portlet.class}
+	service = Portlet.class
 )
 public class CPContentPortlet extends MVCPortlet {
 
@@ -87,8 +87,7 @@ public class CPContentPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CPContentPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private CPContentHelper _cpContentHelper;

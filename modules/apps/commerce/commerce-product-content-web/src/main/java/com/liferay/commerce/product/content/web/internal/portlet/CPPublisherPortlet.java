@@ -72,7 +72,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=power-user,user",
 		"javax.portlet.version=3.0"
 	},
-	service = {CPPublisherPortlet.class, Portlet.class}
+	service = Portlet.class
 )
 public class CPPublisherPortlet extends MVCPortlet {
 
@@ -105,8 +105,7 @@ public class CPPublisherPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		CPPublisherPortlet.class);
+	private static final Log _log = LogFactoryUtil.getLog();
 
 	@Reference
 	private AMImageHTMLTagFactory _amImageHTMLTagFactory;
