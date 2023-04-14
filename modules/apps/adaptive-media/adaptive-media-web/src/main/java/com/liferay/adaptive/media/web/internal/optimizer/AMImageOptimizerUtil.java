@@ -17,15 +17,18 @@ package com.liferay.adaptive.media.web.internal.optimizer;
 import com.liferay.adaptive.media.image.optimizer.AMImageOptimizer;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * @author Sergio González
@@ -33,8 +36,43 @@ import org.osgi.service.component.annotations.Deactivate;
 @Component(service = {})
 public class AMImageOptimizerUtil {
 
+	public static ServiceTrackerMap<String, AMImageOptimizer> _createServiceTrackerMap() {
+
+		ServiceTrackerMap<String, AMImageOptimizer>
+			serviceTrackerMap =
+			new ServiceTrackerMap<String, AMImageOptimizer>() {
+				@Override
+				public void close() {
+					_serviceTrackerMapDCLSingleton.destroy(ServiceTrackerMap::close);
+				}
+
+				@Override
+				public boolean containsKey(String key) {
+					return false;
+				}
+
+				@Override
+				public AMImageOptimizer getService(String key) {
+					return null;
+				}
+
+				@Override
+				public Set<String> keySet() {
+					return null;
+				}
+
+				@Override
+				public Collection<AMImageOptimizer> values() {
+					return null;
+				}
+
+			};
+
+		return serviceTrackerMap;
+	}
 	public static void optimize(long companyId) {
-		if (_serviceTrackerMap == null) {
+		ServiceTrackerMap<String, AMImageOptimizer> serviceTrackerMap = _serviceTrackerMapDCLSingleton.getSingleton(AMImageOptimizerUtil::_createServiceTrackerMap);
+		if (serviceTrackerMap == null) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to optimize for company " + companyId +
@@ -44,10 +82,10 @@ public class AMImageOptimizerUtil {
 			return;
 		}
 
-		Set<String> modelClassNames = _serviceTrackerMap.keySet();
+		Set<String> modelClassNames = serviceTrackerMap.keySet();
 
 		for (String modelClassName : modelClassNames) {
-			AMImageOptimizer amImageOptimizer = _serviceTrackerMap.getService(
+			AMImageOptimizer amImageOptimizer = serviceTrackerMap.getService(
 				modelClassName);
 
 			amImageOptimizer.optimize(companyId);
@@ -55,7 +93,8 @@ public class AMImageOptimizerUtil {
 	}
 
 	public static void optimize(long companyId, String configurationEntryUuid) {
-		if (_serviceTrackerMap == null) {
+		ServiceTrackerMap<String, AMImageOptimizer> serviceTrackerMap = _serviceTrackerMapDCLSingleton.getSingleton(AMImageOptimizerUtil::_createServiceTrackerMap);
+		if (serviceTrackerMap == null) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to optimize for company " + companyId +
@@ -65,10 +104,10 @@ public class AMImageOptimizerUtil {
 			return;
 		}
 
-		Set<String> modelClassNames = _serviceTrackerMap.keySet();
+		Set<String> modelClassNames = serviceTrackerMap.keySet();
 
 		for (String modelClassName : modelClassNames) {
-			AMImageOptimizer amImageOptimizer = _serviceTrackerMap.getService(
+			AMImageOptimizer amImageOptimizer = serviceTrackerMap.getService(
 				modelClassName);
 
 			amImageOptimizer.optimize(companyId, configurationEntryUuid);
@@ -77,19 +116,18 @@ public class AMImageOptimizerUtil {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+		ServiceTrackerMap<String, AMImageOptimizer> serviceTrackerMap = _serviceTrackerMapDCLSingleton.getSingleton(AMImageOptimizerUtil::_createServiceTrackerMap);
+		serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
 			bundleContext, AMImageOptimizer.class, "adaptive.media.key");
 	}
 
-	@Deactivate
-	protected void deactivate() {
-		_serviceTrackerMap.close();
-
-		_serviceTrackerMap = null;
-	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AMImageOptimizerUtil.class);
+
+	public static final DCLSingleton
+		<ServiceTrackerMap<String, AMImageOptimizer>>
+		_serviceTrackerMapDCLSingleton = new DCLSingleton<>();
 
 	private static ServiceTrackerMap<String, AMImageOptimizer>
 		_serviceTrackerMap;
