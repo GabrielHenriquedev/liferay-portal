@@ -14,6 +14,7 @@
 
 package com.liferay.asset.publisher.web.internal.configuration;
 
+import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 
 import java.util.Map;
@@ -32,18 +33,24 @@ import org.osgi.service.component.annotations.Modified;
 public class AssetPublisherSelectionStyleConfigurationUtil {
 
 	public static String defaultSelectionStyle() {
-		return _assetPublisherSelectionStyleConfiguration.
+		AssetPublisherSelectionStyleConfiguration assetPublisherSelectionStyleConfiguration = _assetPublisherSelectionStyleConfigurationSnapshot.get();
+		return assetPublisherSelectionStyleConfiguration.
 			defaultSelectionStyle();
 	}
 
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
-		_assetPublisherSelectionStyleConfiguration =
+		AssetPublisherSelectionStyleConfiguration assetPublisherSelectionStyleConfiguration =
 			ConfigurableUtil.createConfigurable(
 				AssetPublisherSelectionStyleConfiguration.class, properties);
 	}
 
+	public static final Snapshot<AssetPublisherSelectionStyleConfiguration>
+		_assetPublisherSelectionStyleConfigurationSnapshot = new Snapshot<>(
+			AssetPublisherSelectionStyleConfigurationUtil.class,
+			AssetPublisherSelectionStyleConfiguration.class
+	);
 	private static volatile AssetPublisherSelectionStyleConfiguration
 		_assetPublisherSelectionStyleConfiguration;
 
