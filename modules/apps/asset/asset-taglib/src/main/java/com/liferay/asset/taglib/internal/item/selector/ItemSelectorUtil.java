@@ -16,6 +16,8 @@ package com.liferay.asset.taglib.internal.item.selector;
 
 import com.liferay.item.selector.ItemSelector;
 
+import com.liferay.osgi.util.service.Snapshot;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusMessageSender;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -24,30 +26,21 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Pavel Savinov
  */
-@Component(service = {})
 public class ItemSelectorUtil {
 
 	public static ItemSelector getItemSelector() {
 		return _itemSelectorUtil._getItemSelector();
 	}
 
-	@Activate
-	protected void activate() {
-		_itemSelectorUtil = this;
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_itemSelectorUtil = null;
-	}
-
 	private ItemSelector _getItemSelector() {
-		return _itemSelector;
+		return (ItemSelector) _itemSelectorSnapshot;
 	}
 
 	private static ItemSelectorUtil _itemSelectorUtil;
 
-	@Reference
-	private ItemSelector _itemSelector;
+	public static final Snapshot<ItemSelector>
+		_itemSelectorSnapshot = new Snapshot<>(
+		ItemSelectorUtil.class,
+		ItemSelector.class);
 
 }
