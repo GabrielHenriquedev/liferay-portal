@@ -15,19 +15,17 @@
 package com.liferay.adaptive.media.web.internal.background.task;
 
 import com.liferay.adaptive.media.constants.AMOptimizeImagesBackgroundTaskConstants;
+import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusMessageSender;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.messaging.Message;
 
 import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Sergio González
  */
-@Component(service = {})
 public class OptimizeImagesStatusMessageSenderUtil {
 
 	public static void sendStatusMessage(
@@ -58,15 +56,18 @@ public class OptimizeImagesStatusMessageSenderUtil {
 		message.put(AMOptimizeImagesBackgroundTaskConstants.PHASE, phase);
 		message.put("status", BackgroundTaskConstants.STATUS_IN_PROGRESS);
 
-		_backgroundTaskStatusMessageSender.sendBackgroundTaskStatusMessage(
+		BackgroundTaskStatusMessageSender backgroundTaskStatusMessageSender =
+			_backgroundTaskStatusMessageSenderSnapshot.get();
+
+		backgroundTaskStatusMessageSender.sendBackgroundTaskStatusMessage(
 			message);
 	}
 
+	private static final Snapshot<BackgroundTaskStatusMessageSender>
+		_backgroundTaskStatusMessageSenderSnapshot = new Snapshot<>(
+			OptimizeImagesStatusMessageSenderUtil.class,
+			BackgroundTaskStatusMessageSender.class);
 	private static OptimizeImagesStatusMessageSenderUtil
 		_optimizeImagesStatusMessageSenderUtil;
-
-	@Reference
-	private BackgroundTaskStatusMessageSender
-		_backgroundTaskStatusMessageSender;
 
 }
