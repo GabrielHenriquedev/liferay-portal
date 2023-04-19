@@ -20,15 +20,12 @@ import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.source.provider.SegmentsSourceDetailsProvider;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * @author Alejandro Tardín
  */
-@Component(service = {})
 public class SegmentsSourceDetailsProviderUtil {
 
 	public static SegmentsSourceDetailsProvider
@@ -45,19 +42,16 @@ public class SegmentsSourceDetailsProviderUtil {
 			SegmentsEntryConstants.SOURCE_DEFAULT);
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
+	private static final ServiceTrackerMap
+		<String, SegmentsSourceDetailsProvider> _serviceTrackerMap;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(
+			SegmentsSourceDetailsProviderUtil.class);
+
 		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, SegmentsSourceDetailsProvider.class,
+			bundle.getBundleContext(), SegmentsSourceDetailsProvider.class,
 			"segments.source");
 	}
-
-	@Deactivate
-	protected void deactivate() {
-		_serviceTrackerMap.close();
-	}
-
-	private static ServiceTrackerMap<String, SegmentsSourceDetailsProvider>
-		_serviceTrackerMap;
 
 }
