@@ -25,15 +25,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * @author Adolfo Pérez
  */
-@Component(service = {})
 public class DLItemSelectorCriterionCreationMenuRestrictionUtil {
 
 	public static Set<String> getAllowedCreationMenuUIItemKeys(
@@ -64,8 +62,16 @@ public class DLItemSelectorCriterionCreationMenuRestrictionUtil {
 		return allowedCreationMenuUIItemKeys;
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
+	private static final ServiceTrackerMap
+		<String, List<DLItemSelectorCriterionCreationMenuRestriction>>
+			_serviceTrackerMap;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(
+			DLItemSelectorCriterionCreationMenuRestrictionUtil.class);
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
 		_serviceTrackerMap = ServiceTrackerMapFactory.openMultiValueMap(
 			bundleContext, DLItemSelectorCriterionCreationMenuRestriction.class,
 			null,
@@ -74,7 +80,13 @@ public class DLItemSelectorCriterionCreationMenuRestrictionUtil {
 					"model.class.name");
 
 				if (modelClassName != null) {
-					_propertyServiceReferenceMapper.map(
+					PropertyServiceReferenceMapper
+						<String, DLItemSelectorCriterionCreationMenuRestriction>
+							propertyServiceReferenceMapper =
+								new PropertyServiceReferenceMapper<>(
+									"model.class.name");
+
+					propertyServiceReferenceMapper.map(
 						serviceReference, emitter);
 
 					return;
@@ -90,19 +102,5 @@ public class DLItemSelectorCriterionCreationMenuRestrictionUtil {
 				}
 			});
 	}
-
-	@Deactivate
-	protected void deactivate() {
-		_serviceTrackerMap.close();
-	}
-
-	private static ServiceTrackerMap
-		<String, List<DLItemSelectorCriterionCreationMenuRestriction>>
-			_serviceTrackerMap;
-
-	private final PropertyServiceReferenceMapper
-		<String, DLItemSelectorCriterionCreationMenuRestriction>
-			_propertyServiceReferenceMapper =
-				new PropertyServiceReferenceMapper<>("model.class.name");
 
 }
