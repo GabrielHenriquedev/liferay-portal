@@ -18,20 +18,19 @@ import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.spi.history.CTCollectionHistoryProvider;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 
 import java.util.List;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * @author Noor Najjar
  */
-@Component(service = {})
 public class CTCollectionHistoryProviderRegistry {
 
 	public static CTCollectionHistoryProvider getCTCollectionHistoryProvider(
@@ -60,8 +59,24 @@ public class CTCollectionHistoryProviderRegistry {
 			classNameId, classPK);
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
+	private static final Snapshot<ClassNameLocalService>
+		_classNameLocalServiceSnapshot = new Snapshot<>(
+			CTCollectionHistoryProviderRegistry.class,
+			ClassNameLocalService.class);
+	private static final ServiceTrackerMap<Long, CTCollectionHistoryProvider<?>>
+		_ctCollectionHistoryProviderServiceTrackerMap;
+	private static final CTCollectionHistoryProvider<?>
+		_defaultCTCollectionHistoryProvider;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(
+			CTCollectionHistoryProviderRegistry.class);
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		ClassNameLocalService classNameLocalService =
+			_classNameLocalServiceSnapshot.get();
+
 		_ctCollectionHistoryProviderServiceTrackerMap =
 			ServiceTrackerMapFactory.openSingleValueMap(
 				bundleContext,
@@ -74,7 +89,7 @@ public class CTCollectionHistoryProviderRegistry {
 
 					try {
 						emitter.emit(
-							_classNameLocalService.getClassNameId(
+							classNameLocalService.getClassNameId(
 								ctCollectionHistoryProvider.getModelClass()));
 					}
 					finally {
@@ -85,13 +100,5 @@ public class CTCollectionHistoryProviderRegistry {
 		_defaultCTCollectionHistoryProvider =
 			new DefaultCTCollectionHistoryProvider<>();
 	}
-
-	private static ServiceTrackerMap<Long, CTCollectionHistoryProvider<?>>
-		_ctCollectionHistoryProviderServiceTrackerMap;
-	private static CTCollectionHistoryProvider<?>
-		_defaultCTCollectionHistoryProvider;
-
-	@Reference
-	private ClassNameLocalService _classNameLocalService;
 
 }
