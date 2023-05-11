@@ -61,7 +61,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			configurationFieldOptionsProviderUtil =
 				new ConfigurationFieldOptionsProviderUtil();
 
-		configurationFieldOptionsProviderUtil.activate(
+		configurationFieldOptionsProviderUtil(
 			SystemBundleUtil.getBundleContext());
 
 		LanguageUtil languageUtil = new LanguageUtil();
