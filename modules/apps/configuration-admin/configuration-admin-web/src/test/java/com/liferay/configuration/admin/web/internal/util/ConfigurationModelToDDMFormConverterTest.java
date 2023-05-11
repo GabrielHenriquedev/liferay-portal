@@ -37,13 +37,18 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * @author Marcellus Tavares
@@ -57,18 +62,26 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 
 	@Before
 	public void setUp() {
-		ConfigurationFieldOptionsProviderUtil
-			configurationFieldOptionsProviderUtil =
-				new ConfigurationFieldOptionsProviderUtil();
-
-		configurationFieldOptionsProviderUtil.activate(
-			SystemBundleUtil.getBundleContext());
 
 		LanguageUtil languageUtil = new LanguageUtil();
 
 		languageUtil.setLanguage(new LanguageImpl());
 	}
+	@BeforeClass
+	public static void setUpClass() {
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
 
+		Mockito.when(
+			FrameworkUtil.getBundle(Mockito.any())
+		).thenReturn(
+			bundleContext.getBundle()
+		);
+	}
+
+	@AfterClass
+	public static void tearDownClass() {
+		_frameworkUtilMockedStatic.close();
+	}
 	@Test
 	public void testFieldNameWithSpecialCharacter() {
 		ExtendedObjectClassDefinition extendedObjectClassDefinition = mock(
@@ -690,5 +703,6 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 		}
 
 	}
-
+	private static final MockedStatic<FrameworkUtil>
+		_frameworkUtilMockedStatic = Mockito.mockStatic(FrameworkUtil.class);
 }
