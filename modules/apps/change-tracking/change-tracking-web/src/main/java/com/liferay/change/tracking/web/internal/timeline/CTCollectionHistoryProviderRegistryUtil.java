@@ -30,7 +30,7 @@ import org.osgi.framework.FrameworkUtil;
 /**
  * @author Noor Najjar
  */
-public class CTCollectionHistoryProviderRegistry {
+public class CTCollectionHistoryProviderRegistryUtil {
 
 	public static CTCollectionHistoryProvider getCTCollectionHistoryProvider(
 		long classNameId) {
@@ -65,7 +65,7 @@ public class CTCollectionHistoryProviderRegistry {
 
 	static {
 		Bundle bundle = FrameworkUtil.getBundle(
-			CTCollectionHistoryProviderRegistry.class);
+			CTCollectionHistoryProviderRegistryUtil.class);
 
 		BundleContext bundleContext = bundle.getBundleContext();
 
