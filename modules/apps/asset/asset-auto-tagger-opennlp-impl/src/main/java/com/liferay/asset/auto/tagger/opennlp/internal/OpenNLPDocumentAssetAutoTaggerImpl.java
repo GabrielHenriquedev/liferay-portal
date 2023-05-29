@@ -52,12 +52,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Cristina González
  */
-@Component(
-	service = {
-		OpenNLPDocumentAssetAutoTagger.class,
-		OpenNLPDocumentAssetAutoTaggerImpl.class
-	}
-)
+@Component(service = OpenNLPDocumentAssetAutoTagger.class)
 public class OpenNLPDocumentAssetAutoTaggerImpl
 	implements OpenNLPDocumentAssetAutoTagger {
 

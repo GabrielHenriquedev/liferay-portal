@@ -49,12 +49,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Cristina González
  */
-@Component(
-	service = {
-		GCloudNaturalLanguageDocumentAssetAutoTagger.class,
-		GCloudNaturalLanguageDocumentAssetAutoTaggerImpl.class
-	}
-)
+@Component(service = GCloudNaturalLanguageDocumentAssetAutoTagger.class)
 public class GCloudNaturalLanguageDocumentAssetAutoTaggerImpl
 	implements GCloudNaturalLanguageDocumentAssetAutoTagger {
 
