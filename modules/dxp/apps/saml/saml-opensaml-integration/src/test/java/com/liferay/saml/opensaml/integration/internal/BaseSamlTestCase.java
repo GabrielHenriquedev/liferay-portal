@@ -14,6 +14,7 @@
 
 package com.liferay.saml.opensaml.integration.internal;
 
+import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -42,9 +43,12 @@ import com.liferay.saml.constants.SamlProviderConfigurationKeys;
 import com.liferay.saml.opensaml.integration.internal.binding.SamlBindingProvider;
 import com.liferay.saml.opensaml.integration.internal.credential.FileSystemKeyStoreManagerImpl;
 import com.liferay.saml.opensaml.integration.internal.credential.KeyStoreCredentialResolver;
+import com.liferay.saml.opensaml.integration.internal.credential.KeyStoreLocalEntityManager;
+import com.liferay.saml.opensaml.integration.internal.credential.util.KeyStoreUtil;
 import com.liferay.saml.opensaml.integration.internal.identifier.SamlIdentifierGeneratorStrategyFactory;
 import com.liferay.saml.opensaml.integration.internal.metadata.MetadataGeneratorUtil;
 import com.liferay.saml.opensaml.integration.internal.metadata.MetadataManagerImpl;
+import com.liferay.saml.opensaml.integration.internal.metadata.SamlHttpRequestUtilImpl;
 import com.liferay.saml.opensaml.integration.internal.provider.CachingChainingMetadataResolver;
 import com.liferay.saml.opensaml.integration.internal.servlet.profile.IdentifierGenerationStrategyFactory;
 import com.liferay.saml.opensaml.integration.internal.transport.HttpClientFactory;
@@ -55,6 +59,7 @@ import com.liferay.saml.persistence.service.SamlPeerBindingLocalService;
 import com.liferay.saml.persistence.service.SamlPeerBindingLocalServiceUtil;
 import com.liferay.saml.runtime.configuration.SamlProviderConfiguration;
 import com.liferay.saml.runtime.configuration.SamlProviderConfigurationHelper;
+import com.liferay.saml.runtime.credential.KeyStoreManager;
 import com.liferay.saml.runtime.metadata.LocalEntityManager;
 import com.liferay.saml.util.PortletPropsKeys;
 
@@ -68,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,8 +85,11 @@ import net.shibboleth.utilities.java.support.xml.ParserPool;
 import org.apache.http.client.HttpClient;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -96,6 +105,7 @@ import org.opensaml.saml.saml2.metadata.SingleSignOnService;
 import org.opensaml.security.credential.Credential;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -103,6 +113,22 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * @author Mika Koivisto
  */
 public abstract class BaseSamlTestCase {
+
+	@BeforeClass
+	public static void setUpClass() {
+		BundleContext bundleContext = SystemBundleUtil.getBundleContext();
+
+		Mockito.when(
+			FrameworkUtil.getBundle(Mockito.any())
+		).thenReturn(
+			bundleContext.getBundle()
+		);
+	}
+
+	@AfterClass
+	public static void tearDownClass() {
+		_frameworkUtilMockedStatic.close();
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -112,6 +138,7 @@ public abstract class BaseSamlTestCase {
 
 		_setupConfiguration();
 		_setupIdentifiers();
+		_setUpKeyStoreUtil();
 		_setupParserPool();
 
 		_setupPortal();
@@ -328,11 +355,13 @@ public abstract class BaseSamlTestCase {
 	protected IdentifierGenerationStrategyFactory
 		identifierGenerationStrategyFactory;
 	protected List<String> identifiers = new ArrayList<>();
+	protected KeyStoreLocalEntityManager keyStoreLocalEntityManager;
 	protected LocalEntityManager localEntityManager;
 	protected MetadataManagerImpl metadataManagerImpl;
 	protected ParserPool parserPool;
 	protected Portal portal;
 	protected SamlBindingProvider samlBindingProvider;
+	protected SamlHttpRequestUtilImpl samlHttpRequestUtilImpl;
 	protected IdentifierGenerationStrategy samlIdentifierGenerator;
 	protected SamlPeerBindingLocalService samlPeerBindingLocalService;
 	protected SamlProviderConfiguration samlProviderConfiguration;
@@ -440,7 +469,7 @@ public abstract class BaseSamlTestCase {
 			new KeyStoreCredentialResolver();
 
 		ReflectionTestUtil.setFieldValue(
-			keyStoreCredentialResolver, "_keyStoreManager",
+			keyStoreLocalEntityManager, "_keyStoreManager",
 			fileSystemKeyStoreManagerImpl);
 
 		SamlProviderConfigurationHelper peerSamlProviderConfigurationHelper =
@@ -472,6 +501,10 @@ public abstract class BaseSamlTestCase {
 
 		ReflectionTestUtil.setFieldValue(
 			keyStoreCredentialResolver, "_samlProviderConfigurationHelper",
+			peerSamlProviderConfigurationHelper);
+
+		ReflectionTestUtil.setFieldValue(
+			keyStoreLocalEntityManager, "_samlProviderConfigurationHelper",
 			peerSamlProviderConfigurationHelper);
 
 		return keyStoreCredentialResolver;
@@ -613,8 +646,29 @@ public abstract class BaseSamlTestCase {
 		);
 	}
 
+	private void _setUpKeyStoreUtil() throws Exception {
+		Snapshot<KeyStoreManager> snapshot1 = new Snapshot<>(
+			BaseSamlTestCase.class, Snapshot.cast(KeyStoreManager.class));
+
+		ReflectionTestUtil.setFieldValue(
+			snapshot1, "_serivceSupplier",
+			new Supplier<KeyStoreManager>() {
+
+				@Override
+				public KeyStoreManager get() {
+					return fileSystemKeyStoreManagerImpl;
+				}
+
+			});
+
+		ReflectionTestUtil.setFieldValue(
+			KeyStoreUtil.class, "_keyStoreManagerSnapshot", snapshot1);
+	}
+
 	private void _setupMetadata() throws Exception {
 		metadataManagerImpl = new MetadataManagerImpl();
+
+		samlHttpRequestUtilImpl = new SamlHttpRequestUtilImpl();
 
 		fileSystemKeyStoreManagerImpl = new FileSystemKeyStoreManagerImpl();
 
@@ -629,24 +683,32 @@ public abstract class BaseSamlTestCase {
 
 		credentialResolver = new KeyStoreCredentialResolver();
 
+		keyStoreLocalEntityManager = new KeyStoreLocalEntityManager();
+
 		ReflectionTestUtil.setFieldValue(
-			credentialResolver, "_keyStoreManager",
+			keyStoreLocalEntityManager, "_keyStoreManager",
 			fileSystemKeyStoreManagerImpl);
+
 		ReflectionTestUtil.setFieldValue(
 			credentialResolver, "_samlProviderConfigurationHelper",
 			samlProviderConfigurationHelper);
+
+
 
 		ReflectionTestUtil.setFieldValue(
 			metadataManagerImpl, "_credentialResolver", credentialResolver);
 
 		ReflectionTestUtil.setFieldValue(
-			metadataManagerImpl, "_localEntityManager", credentialResolver);
+			metadataManagerImpl, "_localEntityManager",
+			keyStoreLocalEntityManager);
 
 		ReflectionTestUtil.setFieldValue(
 			metadataManagerImpl, "_portal", portal);
 		ReflectionTestUtil.setFieldValue(
 			metadataManagerImpl, "_samlProviderConfigurationHelper",
 			samlProviderConfigurationHelper);
+
+
 
 		ReflectionTestUtil.invoke(
 			metadataManagerImpl, "activate",
@@ -663,6 +725,10 @@ public abstract class BaseSamlTestCase {
 
 		cachingChainingMetadataResolver.addMetadataResolver(
 			new MockMetadataResolver());
+
+		ReflectionTestUtil.setFieldValue(
+			keyStoreLocalEntityManager, "_samlProviderConfigurationHelper",
+			samlProviderConfigurationHelper);
 	}
 
 	private void _setupParserPool() {
@@ -782,6 +848,9 @@ public abstract class BaseSamlTestCase {
 			answer -> _samlPeerBindings.get((long)answer.getArguments()[0])
 		);
 	}
+
+	private static final MockedStatic<FrameworkUtil>
+		_frameworkUtilMockedStatic = Mockito.mockStatic(FrameworkUtil.class);
 
 	private final Map<Long, SamlPeerBinding> _samlPeerBindings =
 		new HashMap<>();

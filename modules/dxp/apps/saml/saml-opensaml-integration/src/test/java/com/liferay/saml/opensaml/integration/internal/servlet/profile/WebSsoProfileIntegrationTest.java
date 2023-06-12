@@ -21,6 +21,7 @@ import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.saml.constants.SamlWebKeys;
 import com.liferay.saml.opensaml.integration.internal.BaseSamlTestCase;
 import com.liferay.saml.opensaml.integration.internal.bootstrap.SecurityConfigurationBootstrap;
+import com.liferay.saml.opensaml.integration.internal.credential.KeyStoreLocalEntityManager;
 import com.liferay.saml.opensaml.integration.internal.metadata.MetadataManagerImpl;
 import com.liferay.saml.opensaml.integration.internal.provider.CachingChainingMetadataResolver;
 import com.liferay.saml.opensaml.integration.internal.util.OpenSamlUtil;
@@ -600,10 +601,12 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 
 		metadataManagerImpl = new MetadataManagerImpl();
 
+		keyStoreLocalEntityManager = new KeyStoreLocalEntityManager();
+
 		ReflectionTestUtil.setFieldValue(
 			metadataManagerImpl, "_credentialResolver", credentialResolver);
 		ReflectionTestUtil.setFieldValue(
-			metadataManagerImpl, "_localEntityManager", credentialResolver);
+			metadataManagerImpl, "_localEntityManager", keyStoreLocalEntityManager);
 		ReflectionTestUtil.setFieldValue(
 			metadataManagerImpl, "_portal", portal);
 		ReflectionTestUtil.setFieldValue(
