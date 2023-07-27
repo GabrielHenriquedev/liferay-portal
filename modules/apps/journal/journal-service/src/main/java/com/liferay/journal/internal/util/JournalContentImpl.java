@@ -14,7 +14,6 @@
 
 package com.liferay.journal.internal.util;
 
-import com.liferay.change.tracking.spi.listener.CTEventListener;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
@@ -36,7 +35,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutSet;
-import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -69,14 +67,8 @@ import org.osgi.service.component.annotations.Reference;
  * @author Raymond Augé
  * @author Michael Young
  */
-@Component(
-	service = {
-		CTEventListener.class, IdentifiableOSGiService.class,
-		JournalContent.class
-	}
-)
-public class JournalContentImpl
-	implements CTEventListener, IdentifiableOSGiService, JournalContent {
+@Component(service = JournalContent.class)
+public class JournalContentImpl implements JournalContent {
 
 	@Override
 	public void clearCache() {
@@ -84,7 +76,7 @@ public class JournalContentImpl
 			return;
 		}
 
-		_portalCache.removeAll();
+		portalCache.removeAll();
 	}
 
 	@Override
@@ -254,7 +246,7 @@ public class JournalContentImpl
 		boolean productionMode = CTCollectionThreadLocal.isProductionMode();
 
 		if (productionMode) {
-			articleDisplay = _portalCache.get(journalContentKey);
+			articleDisplay = portalCache.get(journalContentKey);
 		}
 
 		if ((articleDisplay == null) || !lifecycleRender) {
@@ -267,7 +259,7 @@ public class JournalContentImpl
 
 				try {
 					if (productionMode) {
-						_portalCache.put(journalContentKey, articleDisplay);
+						portalCache.put(journalContentKey, articleDisplay);
 					}
 				}
 				catch (ClassCastException classCastException) {
@@ -380,26 +372,16 @@ public class JournalContentImpl
 			groupId, articleId, viewMode, languageId, 1, themeDisplay);
 	}
 
-	@Override
-	public String getOSGiServiceIdentifier() {
-		return JournalContent.class.getName();
-	}
-
-	@Override
-	public void onAfterPublish(long ctCollectionId) {
-		_portalCache.removeAll();
-	}
-
 	@Activate
 	protected void activate() {
-		_portalCache =
+		portalCache =
 			(PortalCache<JournalContentKey, JournalArticleDisplay>)
 				_multiVMPool.getPortalCache(CACHE_NAME);
 
 		_journalArticlePortalCacheIndexer = new PortalCacheIndexer<>(
-			new JournalContentArticleKeyIndexEncoder(), _portalCache);
+			new JournalContentArticleKeyIndexEncoder(), portalCache);
 		_journalTemplatePortalCacheIndexer = new PortalCacheIndexer<>(
-			new JournalContentTemplateKeyIndexEncoder(), _portalCache);
+			new JournalContentTemplateKeyIndexEncoder(), portalCache);
 	}
 
 	@Deactivate
@@ -477,6 +459,9 @@ public class JournalContentImpl
 
 	protected static final String CACHE_NAME = JournalContent.class.getName();
 
+	protected static PortalCache<JournalContentKey, JournalArticleDisplay>
+		portalCache;
+
 	private ThemeDisplay _getDefaultThemeDisplay() {
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
@@ -499,8 +484,6 @@ public class JournalContentImpl
 	private static PortalCacheIndexer
 		<String, JournalContentKey, JournalArticleDisplay>
 			_journalTemplatePortalCacheIndexer;
-	private static PortalCache<JournalContentKey, JournalArticleDisplay>
-		_portalCache;
 
 	static {
 		try {
