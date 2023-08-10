@@ -24,10 +24,6 @@ public class ExportImportControllerRegistryUtil {
 		return (ExportController)_exportControllers.getService(className);
 	}
 
-	public static List<ExportImportController> getExportImportControllers() {
-		return new ArrayList<>(_exportControllers.values());
-	}
-
 	public static ImportController getImportController(String className) {
 		return (ImportController)_importControllers.getService(className);
 	}
