@@ -9,11 +9,14 @@ import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.ItemSelectorViewDescriptor;
 import com.liferay.item.selector.ItemSelectorViewDescriptorRenderer;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.sharing.filter.SharedAssetsFilterItem;
-import com.liferay.sharing.web.internal.filter.SharedAssetsFilterItemRegistry;
 
 import java.io.IOException;
 
@@ -28,7 +31,10 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -40,6 +46,22 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class SharedAssetsFilterItemItemSelectorView
 	implements ItemSelectorView<SharedAssetsFilterItemItemSelectorCriterion> {
+
+	public static SharedAssetsFilterItem getSharedAssetsFilterItem(
+		String className) {
+
+		for (SharedAssetsFilterItem sharedAssetsFilterItem :
+				_serviceTrackerList) {
+
+			if (StringUtil.equals(
+					className, sharedAssetsFilterItem.getClassName())) {
+
+				return sharedAssetsFilterItem;
+			}
+		}
+
+		return null;
+	}
 
 	@Override
 	public Class<SharedAssetsFilterItemItemSelectorCriterion>
@@ -127,8 +149,7 @@ public class SharedAssetsFilterItemItemSelectorView
 							portletURL, null, null);
 
 					List<SharedAssetsFilterItem> sharedAssetsFilterItems =
-						_sharedAssetsFilterItemRegistry.
-							getSharedAssetsFilterItems();
+						_serviceTrackerList.toList();
 
 					entriesSearchContainer.setResultsAndTotal(
 						() -> sharedAssetsFilterItems,
@@ -150,6 +171,22 @@ public class SharedAssetsFilterItemItemSelectorView
 			});
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerList = ServiceTrackerListFactory.open(
+			bundleContext, SharedAssetsFilterItem.class,
+			Collections.reverseOrder(
+				new PropertyServiceReferenceComparator<>(
+					"navigation.item.order")));
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerList.close();
+	}
+
+	private static ServiceTrackerList<SharedAssetsFilterItem>
+		_serviceTrackerList;
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.singletonList(
 			new SharedAssetsFilterItemItemSelectorReturnType());
@@ -161,8 +198,5 @@ public class SharedAssetsFilterItemItemSelectorView
 
 	@Reference
 	private Language _language;
-
-	@Reference
-	private SharedAssetsFilterItemRegistry _sharedAssetsFilterItemRegistry;
 
 }
