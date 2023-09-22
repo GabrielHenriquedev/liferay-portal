@@ -15,6 +15,7 @@ import com.liferay.exportimport.kernel.exception.ExportImportIOException;
 import com.liferay.exportimport.kernel.exception.MissingReferenceException;
 import com.liferay.exportimport.kernel.exception.RemoteExportException;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
@@ -22,7 +23,6 @@ import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalSer
 import com.liferay.exportimport.kernel.staging.StagingURLHelperUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelperUtil;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -526,25 +526,25 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 					ExportImportConfigurationConstants.
 						TYPE_PUBLISH_PORTLET_REMOTE) {
 
-				ExportImportFileHelperUtil.importPortletDataDeletions(
+				ExportImportHelperUtil.importPortletDataDeletions(
 					exportImportConfiguration, file);
 
 				missingReferences =
-					ExportImportFileHelperUtil.validateImportPortletInfo(
+					ExportImportHelperUtil.validateImportPortletInfo(
 						exportImportConfiguration, file);
 
-				ExportImportFileHelperUtil.importPortletInfo(
+				ExportImportHelperUtil.importPortletInfo(
 					exportImportConfiguration, file);
 			}
 			else {
-				ExportImportFileHelperUtil.importLayoutsDataDeletions(
+				ExportImportHelperUtil.importLayoutsDataDeletions(
 					exportImportConfiguration, file);
 
 				missingReferences =
-					ExportImportFileHelperUtil.validateImportLayoutsFile(
+					ExportImportHelperUtil.validateImportLayoutsFile(
 						exportImportConfiguration, file);
 
-				ExportImportFileHelperUtil.importLayouts(
+				ExportImportHelperUtil.importLayouts(
 					exportImportConfiguration, file);
 			}
 

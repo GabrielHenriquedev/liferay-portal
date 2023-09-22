@@ -13,7 +13,6 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelperUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -1147,7 +1146,7 @@ public class UserGroupLocalServiceImpl extends UserGroupLocalServiceBaseImpl {
 						ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT,
 						exportLayoutSettingsMap);
 
-			files[0] = ExportImportFileHelperUtil.exportLayoutsAsFile(
+			files[0] = ExportImportHelperUtil.exportLayoutsAsFile(
 				exportImportConfiguration);
 		}
 
@@ -1167,7 +1166,7 @@ public class UserGroupLocalServiceImpl extends UserGroupLocalServiceBaseImpl {
 						ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT,
 						exportLayoutSettingsMap);
 
-			files[1] = ExportImportFileHelperUtil.exportLayoutsAsFile(
+			files[1] = ExportImportHelperUtil.exportLayoutsAsFile(
 				exportImportConfiguration);
 		}
 
@@ -1251,7 +1250,7 @@ public class UserGroupLocalServiceImpl extends UserGroupLocalServiceBaseImpl {
 						ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
 						importLayoutSettingsMap);
 
-			ExportImportFileHelperUtil.importLayouts(
+			ExportImportHelperUtil.importLayouts(
 				exportImportConfiguration, privateLayoutsFile);
 		}
 
@@ -1268,7 +1267,7 @@ public class UserGroupLocalServiceImpl extends UserGroupLocalServiceBaseImpl {
 						ExportImportConfigurationConstants.TYPE_IMPORT_LAYOUT,
 						importLayoutSettingsMap);
 
-			ExportImportFileHelperUtil.importLayouts(
+			ExportImportHelperUtil.importLayouts(
 				exportImportConfiguration, publicLayoutsFile);
 		}
 	}

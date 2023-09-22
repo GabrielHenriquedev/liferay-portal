@@ -5,8 +5,8 @@
 
 package com.liferay.exportimport.internal.background.task;
 
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -74,6 +74,6 @@ public class LayoutExportBackgroundTaskExecutor
 	private BackgroundTaskManager _backgroundTaskManager;
 
 	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
+	private ExportImportHelper _exportImportFileHelper;
 
 }

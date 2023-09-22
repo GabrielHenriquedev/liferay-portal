@@ -13,7 +13,6 @@ import com.liferay.exportimport.kernel.exception.LARFileNameException;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
 import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
@@ -235,7 +234,7 @@ public class ExportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 		_exportImportConfigurationSettingsMapFactory;
 
 	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
+	private ExportImportHelper _exportImportFileHelper;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;

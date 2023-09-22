@@ -7,10 +7,10 @@ package com.liferay.exportimport.internal.background.task;
 
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
@@ -251,7 +251,7 @@ public class LayoutSetPrototypeMergeBackgroundTaskExecutor
 		_exportImportConfigurationLocalService;
 
 	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
+	private ExportImportHelper _exportImportFileHelper;
 
 	@Reference
 	private LayoutSetLocalService _layoutSetLocalService;

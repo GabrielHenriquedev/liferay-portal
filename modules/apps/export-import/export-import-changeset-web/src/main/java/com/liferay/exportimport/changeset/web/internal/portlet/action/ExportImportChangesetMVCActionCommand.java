@@ -18,7 +18,6 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.StagingURLHelper;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.User;
@@ -144,7 +143,7 @@ public class ExportImportChangesetMVCActionCommand
 						settingsMap);
 
 			backgroundTaskId =
-				exportImportFileHelper.exportPortletInfoAsFileInBackground(
+				exportImportHelper.exportPortletInfoAsFileInBackground(
 					themeDisplay.getUserId(), exportImportConfiguration);
 		}
 		else if (cmd.equals(Constants.PUBLISH) ||
@@ -261,7 +260,7 @@ public class ExportImportChangesetMVCActionCommand
 		exportImportConfigurationSettingsMapFactory;
 
 	@Reference
-	protected ExportImportFileHelper exportImportFileHelper;
+	protected ExportImportHelper exportImportFileHelper;
 
 	@Reference
 	protected ExportImportHelper exportImportHelper;

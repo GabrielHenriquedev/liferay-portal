@@ -14,7 +14,6 @@ import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUti
 import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
@@ -272,7 +271,7 @@ public class LayoutRemoteStagingBackgroundTaskExecutor
 
 		settingsMap.put("layoutIds", layoutIds);
 
-		return _exportImportFileHelper.exportLayoutsAsFile(
+		return _exportImportHelper.exportLayoutsAsFile(
 			exportImportConfiguration);
 	}
 
@@ -311,9 +310,6 @@ public class LayoutRemoteStagingBackgroundTaskExecutor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutRemoteStagingBackgroundTaskExecutor.class);
-
-	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;

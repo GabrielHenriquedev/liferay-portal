@@ -6,7 +6,17 @@
 package com.liferay.exportimport.internal.lar;
 
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
+import com.liferay.document.library.kernel.util.DLValidatorUtil;
 import com.liferay.exportimport.constants.ExportImportBackgroundTaskContextMapConstants;
+import com.liferay.exportimport.controller.PortletExportController;
+import com.liferay.exportimport.controller.PortletImportController;
+import com.liferay.exportimport.internal.util.ExportImportFileHelperImpl;
+import com.liferay.exportimport.kernel.background.task.BackgroundTaskExecutorNames;
+import com.liferay.exportimport.kernel.controller.ExportController;
+import com.liferay.exportimport.kernel.controller.ImportController;
+import com.liferay.exportimport.kernel.exception.ExportImportIOException;
+import com.liferay.exportimport.kernel.exception.ExportImportRuntimeException;
+import com.liferay.exportimport.kernel.exception.LARFileNameException;
 import com.liferay.exportimport.kernel.lar.DefaultConfigurationPortletDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
@@ -15,6 +25,7 @@ import com.liferay.exportimport.kernel.lar.MissingReference;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
+import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
@@ -22,22 +33,30 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
+import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
+import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
 import com.liferay.exportimport.portlet.data.handler.util.ExportImportGroupedModelUtil;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
+import com.liferay.osgi.util.service.Snapshot;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskContextMapConstants;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -63,6 +82,7 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.PortletLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.SystemEventLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -94,6 +114,7 @@ import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.staging.configuration.StagingConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
@@ -127,7 +148,127 @@ import org.xml.sax.XMLReader;
 	configurationPid = "com.liferay.staging.configuration.StagingConfiguration",
 	service = ExportImportHelper.class
 )
+@CTAware
 public class ExportImportHelperImpl implements ExportImportHelper {
+
+	@Override
+	public File exportLayoutsAsFile(
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		try {
+			return _exportControllerLayout.export(exportImportConfiguration);
+		}
+		catch (PortalException portalException) {
+			throw portalException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public long exportLayoutsAsFileInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		if (!DLValidatorUtil.isValidName(exportImportConfiguration.getName())) {
+			throw new LARFileNameException(exportImportConfiguration.getName());
+		}
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskManager.addBackgroundTask(
+				userId, exportImportConfiguration.getGroupId(),
+				exportImportConfiguration.getName(),
+				BackgroundTaskExecutorNames.
+					LAYOUT_EXPORT_BACKGROUND_TASK_EXECUTOR,
+				HashMapBuilder.<String, Serializable>put(
+					"exportImportConfigurationId",
+					exportImportConfiguration.getExportImportConfigurationId()
+				).build(),
+				new ServiceContext());
+
+		return backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	public long exportLayoutsAsFileInBackground(
+			long userId, long exportImportConfigurationId)
+		throws PortalException {
+
+		return exportLayoutsAsFileInBackground(
+			userId,
+			_exportImportConfigurationLocalService.getExportImportConfiguration(
+				exportImportConfigurationId));
+	}
+
+	@Override
+	public File exportPortletInfoAsFile(
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		try {
+			return _exportControllerPortlet.export(exportImportConfiguration);
+		}
+		catch (PortalException portalException) {
+			throw portalException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public long exportPortletInfoAsFileInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		String fileName = MapUtil.getString(
+			exportImportConfiguration.getSettingsMap(), "fileName");
+
+		if (!DLValidatorUtil.isValidName(fileName)) {
+			throw new LARFileNameException(fileName);
+		}
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskManager.addBackgroundTask(
+				userId, exportImportConfiguration.getGroupId(),
+				exportImportConfiguration.getName(),
+				BackgroundTaskExecutorNames.
+					PORTLET_EXPORT_BACKGROUND_TASK_EXECUTOR,
+				HashMapBuilder.<String, Serializable>put(
+					"exportImportConfigurationId",
+					exportImportConfiguration.getExportImportConfigurationId()
+				).build(),
+				new ServiceContext());
+
+		return backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	public long exportPortletInfoAsFileInBackground(
+			long userId, long exportImportConfigurationId)
+		throws PortalException {
+
+		return exportPortletInfoAsFileInBackground(
+			userId,
+			_exportImportConfigurationLocalService.getExportImportConfiguration(
+				exportImportConfigurationId));
+	}
 
 	@Override
 	public long[] getAllLayoutIds(long groupId, boolean privateLayout) {
@@ -680,6 +821,427 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	}
 
 	@Override
+	public void importLayouts(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			ImportController layoutImportController =
+				_layoutImportControllerSnapshot.get();
+
+			layoutImportController.importFile(exportImportConfiguration, file);
+		}
+		catch (PortalException portalException) {
+			Throwable throwable = portalException.getCause();
+
+			if (throwable instanceof LocaleException) {
+				throw (PortalException)throwable;
+			}
+
+			throw portalException;
+		}
+		catch (SystemException systemException) {
+			throw systemException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public void importLayouts(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, inputStream);
+
+			importLayouts(exportImportConfiguration, file);
+		}
+		catch (IOException ioException) {
+			ExportImportIOException exportImportIOException =
+				new ExportImportIOException(
+					ExportImportFileHelperImpl.class.getName(), ioException);
+
+			if (file != null) {
+				exportImportIOException.setFileName(file.getName());
+				exportImportIOException.setType(
+					ExportImportIOException.LAYOUT_IMPORT_FILE);
+			}
+			else {
+				exportImportIOException.setType(
+					ExportImportIOException.LAYOUT_IMPORT);
+			}
+
+			throw exportImportIOException;
+		}
+		finally {
+			FileUtil.delete(file);
+		}
+	}
+
+	@Override
+	public void importLayoutsDataDeletions(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			ImportController layoutImportController =
+				_layoutImportControllerSnapshot.get();
+
+			layoutImportController.importDataDeletions(
+				exportImportConfiguration, file);
+		}
+		catch (PortalException portalException) {
+			Throwable throwable = portalException.getCause();
+
+			if (throwable instanceof LocaleException) {
+				throw (PortalException)throwable;
+			}
+
+			throw portalException;
+		}
+		catch (SystemException systemException) {
+			throw systemException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public long importLayoutSetPrototypeInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			File file)
+		throws PortalException {
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskManager.addBackgroundTask(
+				userId, exportImportConfiguration.getGroupId(),
+				exportImportConfiguration.getName(),
+				BackgroundTaskExecutorNames.
+					LAYOUT_SET_PROTOTYPE_IMPORT_BACKGROUND_TASK_EXECUTOR,
+				HashMapBuilder.<String, Serializable>put(
+					BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true
+				).put(
+					"exportImportConfigurationId",
+					exportImportConfiguration.getExportImportConfigurationId()
+				).build(),
+				new ServiceContext());
+
+		backgroundTask.addAttachment(userId, file.getName(), file);
+
+		return backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	public long importLayoutsInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			File file)
+		throws PortalException {
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskManager.addBackgroundTask(
+				userId, exportImportConfiguration.getGroupId(),
+				exportImportConfiguration.getName(),
+				BackgroundTaskExecutorNames.
+					LAYOUT_IMPORT_BACKGROUND_TASK_EXECUTOR,
+				HashMapBuilder.<String, Serializable>put(
+					"exportImportConfigurationId",
+					exportImportConfiguration.getExportImportConfigurationId()
+				).build(),
+				new ServiceContext());
+
+		backgroundTask.addAttachment(userId, file.getName(), file);
+
+		return backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	public long importLayoutsInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, inputStream);
+
+			return importLayoutsInBackground(
+				userId, exportImportConfiguration, file);
+		}
+		catch (IOException ioException) {
+			ExportImportIOException exportImportIOException =
+				new ExportImportIOException(
+					ExportImportFileHelperImpl.class.getName(), ioException);
+
+			if (file != null) {
+				exportImportIOException.setFileName(file.getName());
+				exportImportIOException.setType(
+					ExportImportIOException.LAYOUT_IMPORT_FILE);
+			}
+			else {
+				exportImportIOException.setType(
+					ExportImportIOException.LAYOUT_IMPORT);
+			}
+
+			throw exportImportIOException;
+		}
+		finally {
+			FileUtil.delete(file);
+		}
+	}
+
+	@Override
+	public long importLayoutsInBackground(
+			long userId, long exportImportConfigurationId, File file)
+		throws PortalException {
+
+		return importPortletInfoInBackground(
+			userId,
+			_exportImportConfigurationLocalService.getExportImportConfiguration(
+				exportImportConfigurationId),
+			file);
+	}
+
+	@Override
+	public long importLayoutsInBackground(
+			long userId, long exportImportConfigurationId,
+			InputStream inputStream)
+		throws PortalException {
+
+		return importLayoutsInBackground(
+			userId,
+			_exportImportConfigurationLocalService.getExportImportConfiguration(
+				exportImportConfigurationId),
+			inputStream);
+	}
+
+	@Override
+	public void importPortletDataDeletions(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			_importControllerPortlet.importDataDeletions(
+				exportImportConfiguration, file);
+		}
+		catch (PortalException portalException) {
+			Throwable throwable = portalException.getCause();
+
+			if (throwable instanceof LocaleException) {
+				throw (PortalException)throwable;
+			}
+
+			throw portalException;
+		}
+		catch (SystemException systemException) {
+			throw systemException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public void importPortletInfo(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			_importControllerPortlet.importFile(
+				exportImportConfiguration, file);
+		}
+		catch (PortalException portalException) {
+			Throwable throwable = portalException.getCause();
+
+			while (true) {
+				if (throwable == null) {
+					break;
+				}
+
+				if (throwable instanceof LocaleException) {
+					throw (PortalException)throwable;
+				}
+
+				if (throwable instanceof PortletDataException) {
+					throwable = throwable.getCause();
+				}
+				else {
+					break;
+				}
+			}
+
+			throw portalException;
+		}
+		catch (SystemException systemException) {
+			throw systemException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public void importPortletInfo(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, inputStream);
+
+			importPortletInfo(exportImportConfiguration, file);
+		}
+		catch (IOException ioException) {
+			ExportImportIOException exportImportIOException =
+				new ExportImportIOException(
+					ExportImportFileHelperImpl.class.getName(), ioException);
+
+			if (file != null) {
+				exportImportIOException.setFileName(file.getName());
+				exportImportIOException.setType(
+					ExportImportIOException.PORTLET_IMPORT_FILE);
+			}
+			else {
+				exportImportIOException.setType(
+					ExportImportIOException.PORTLET_IMPORT);
+			}
+
+			throw exportImportIOException;
+		}
+		finally {
+			FileUtil.delete(file);
+		}
+	}
+
+	@Override
+	public long importPortletInfoInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			File file)
+		throws PortalException {
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskManager.addBackgroundTask(
+				userId, exportImportConfiguration.getGroupId(),
+				exportImportConfiguration.getName(),
+				BackgroundTaskExecutorNames.
+					PORTLET_IMPORT_BACKGROUND_TASK_EXECUTOR,
+				HashMapBuilder.<String, Serializable>put(
+					"exportImportConfigurationId",
+					exportImportConfiguration.getExportImportConfigurationId()
+				).build(),
+				new ServiceContext());
+
+		backgroundTask.addAttachment(userId, file.getName(), file);
+
+		return backgroundTask.getBackgroundTaskId();
+	}
+
+	@Override
+	public long importPortletInfoInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, inputStream);
+
+			return importPortletInfoInBackground(
+				userId, exportImportConfiguration, file);
+		}
+		catch (IOException ioException) {
+			ExportImportIOException exportImportIOException =
+				new ExportImportIOException(
+					ExportImportFileHelperImpl.class.getName(), ioException);
+
+			if (file != null) {
+				exportImportIOException.setFileName(file.getName());
+				exportImportIOException.setType(
+					ExportImportIOException.PORTLET_IMPORT_FILE);
+			}
+			else {
+				exportImportIOException.setType(
+					ExportImportIOException.PORTLET_IMPORT);
+			}
+
+			throw exportImportIOException;
+		}
+		finally {
+			FileUtil.delete(file);
+		}
+	}
+
+	@Override
+	public long importPortletInfoInBackground(
+			long userId, long exportImportConfigurationId, File file)
+		throws PortalException {
+
+		return importPortletInfoInBackground(
+			userId,
+			_exportImportConfigurationLocalService.getExportImportConfiguration(
+				exportImportConfigurationId),
+			file);
+	}
+
+	@Override
+	public long importPortletInfoInBackground(
+			long userId, long exportImportConfigurationId,
+			InputStream inputStream)
+		throws PortalException {
+
+		return importPortletInfoInBackground(
+			userId,
+			_exportImportConfigurationLocalService.getExportImportConfiguration(
+				exportImportConfigurationId),
+			inputStream);
+	}
+
+	@Override
 	public boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext,
 		StagedModel referenceStagedModel) {
@@ -814,6 +1376,28 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return ExportImportGroupedModelUtil.
 			isReferenceInLayoutGroupWithinExportScope(
 				portletDataContext, groupedModel);
+	}
+
+	@Override
+	public long mergeLayoutSetPrototypeInBackground(
+			long userId, long groupId,
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		BackgroundTask backgroundTask =
+			_backgroundTaskManager.addBackgroundTask(
+				userId, groupId, exportImportConfiguration.getName(),
+				BackgroundTaskExecutorNames.
+					LAYOUT_SET_PROTOTYPE_MERGE_BACKGROUND_TASK_EXECUTOR,
+				HashMapBuilder.<String, Serializable>put(
+					BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true
+				).put(
+					"exportImportConfigurationId",
+					exportImportConfiguration.getExportImportConfigurationId()
+				).build(),
+				new ServiceContext());
+
+		return backgroundTask.getBackgroundTaskId();
 	}
 
 	@Override
@@ -1001,6 +1585,149 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 		catch (Exception exception) {
 			_log.error(exception);
+		}
+	}
+
+	@Override
+	public MissingReferences validateImportLayoutsFile(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			ImportController layoutImportController =
+				_layoutImportControllerSnapshot.get();
+
+			return layoutImportController.validateFile(
+				exportImportConfiguration, file);
+		}
+		catch (PortalException portalException) {
+			Throwable throwable = portalException.getCause();
+
+			if (throwable instanceof LocaleException) {
+				throw (PortalException)throwable;
+			}
+
+			throw portalException;
+		}
+		catch (SystemException systemException) {
+			throw systemException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public MissingReferences validateImportLayoutsFile(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, inputStream);
+
+			return validateImportLayoutsFile(exportImportConfiguration, file);
+		}
+		catch (IOException ioException) {
+			ExportImportIOException exportImportIOException =
+				new ExportImportIOException(
+					ExportImportFileHelperImpl.class.getName(), ioException);
+
+			if (file != null) {
+				exportImportIOException.setFileName(file.getName());
+				exportImportIOException.setType(
+					ExportImportIOException.LAYOUT_VALIDATE_FILE);
+			}
+			else {
+				exportImportIOException.setType(
+					ExportImportIOException.LAYOUT_VALIDATE);
+			}
+
+			throw exportImportIOException;
+		}
+		finally {
+			FileUtil.delete(file);
+		}
+	}
+
+	@Override
+	public MissingReferences validateImportPortletInfo(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			return _importControllerPortlet.validateFile(
+				exportImportConfiguration, file);
+		}
+		catch (PortalException portalException) {
+			Throwable throwable = portalException.getCause();
+
+			if (throwable instanceof LocaleException) {
+				throw (PortalException)throwable;
+			}
+
+			throw portalException;
+		}
+		catch (SystemException systemException) {
+			throw systemException;
+		}
+		catch (Exception exception) {
+			ExportImportRuntimeException exportImportRuntimeException =
+				new ExportImportRuntimeException(
+					exception.getLocalizedMessage(), exception);
+
+			exportImportRuntimeException.setClassName(
+				ExportImportFileHelperImpl.class.getName());
+
+			throw exportImportRuntimeException;
+		}
+	}
+
+	@Override
+	public MissingReferences validateImportPortletInfo(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, inputStream);
+
+			return validateImportPortletInfo(exportImportConfiguration, file);
+		}
+		catch (IOException ioException) {
+			ExportImportIOException exportImportIOException =
+				new ExportImportIOException(
+					ExportImportFileHelperImpl.class.getName(), ioException);
+
+			if (file != null) {
+				exportImportIOException.setFileName(file.getName());
+				exportImportIOException.setType(
+					ExportImportIOException.PORTLET_VALIDATE_FILE);
+			}
+			else {
+				exportImportIOException.setType(
+					ExportImportIOException.PORTLET_VALIDATE);
+			}
+
+			throw exportImportIOException;
+		}
+		finally {
+			FileUtil.delete(file);
 		}
 	}
 
@@ -1502,14 +2229,41 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportImportHelperImpl.class);
 
+	private static final Snapshot<ImportController>
+		_layoutImportControllerSnapshot = new Snapshot<>(
+			ExportImportFileHelperImpl.class, ImportController.class,
+			"(model.class.name=com.liferay.portal.kernel.model.Layout)", true);
+
+	@Reference
+	private BackgroundTaskManager _backgroundTaskManager;
+
 	@Reference
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
 	private DLFileEntryLocalService _dlFileEntryLocalService;
 
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Layout)"
+	)
+	private ExportController _exportControllerLayout;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Portlet)"
+	)
+	private PortletExportController _exportControllerPortlet;
+
+	@Reference
+	private ExportImportConfigurationLocalService
+		_exportImportConfigurationLocalService;
+
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Portlet)"
+	)
+	private PortletImportController _importControllerPortlet;
 
 	@Reference
 	private JSONFactory _jsonFactory;

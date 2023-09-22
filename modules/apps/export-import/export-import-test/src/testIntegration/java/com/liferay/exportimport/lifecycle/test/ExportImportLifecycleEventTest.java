@@ -9,13 +9,13 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleListener;
 import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelperUtil;
 import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
@@ -115,7 +115,7 @@ public class ExportImportLifecycleEventTest {
 					exportLayoutSettingsMap);
 
 		try {
-			ExportImportFileHelperUtil.exportLayoutsAsFile(
+			ExportImportHelperUtil.exportLayoutsAsFile(
 				exportImportConfiguration);
 
 			Assert.fail();
@@ -153,7 +153,7 @@ public class ExportImportLifecycleEventTest {
 					importLayoutSettingsMap);
 
 		try {
-			ExportImportFileHelperUtil.importLayouts(
+			ExportImportHelperUtil.importLayouts(
 				exportImportConfiguration, (File)null);
 
 			Assert.fail();
@@ -225,7 +225,7 @@ public class ExportImportLifecycleEventTest {
 					exportPortletSettingsMap);
 
 		try {
-			ExportImportFileHelperUtil.exportPortletInfoAsFile(
+			ExportImportHelperUtil.exportPortletInfoAsFile(
 				exportImportConfiguration);
 
 			Assert.fail();
@@ -258,7 +258,7 @@ public class ExportImportLifecycleEventTest {
 					importPortletSettingsMap);
 
 		try {
-			ExportImportFileHelperUtil.importPortletInfo(
+			ExportImportHelperUtil.importPortletInfo(
 				exportImportConfiguration, (File)null);
 
 			Assert.fail();

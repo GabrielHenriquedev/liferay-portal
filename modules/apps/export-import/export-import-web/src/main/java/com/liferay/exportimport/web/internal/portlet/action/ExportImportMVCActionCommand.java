@@ -20,7 +20,6 @@ import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.exception.LocaleException;
@@ -235,7 +234,7 @@ public class ExportImportMVCActionCommand extends BaseMVCActionCommand {
 			PermissionThreadLocal.getPermissionChecker(), targetGroupId,
 			ActionKeys.EXPORT_IMPORT_PORTLET_INFO);
 
-		_exportImportFileHelper.importPortletInfoInBackground(
+		_exportImportHelper.importPortletInfoInBackground(
 			_portal.getUserId(actionRequest), exportImportConfiguration,
 			inputStream);
 	}
@@ -337,7 +336,7 @@ public class ExportImportMVCActionCommand extends BaseMVCActionCommand {
 			PermissionThreadLocal.getPermissionChecker(), targetGroupId,
 			ActionKeys.EXPORT_IMPORT_PORTLET_INFO);
 
-		return _exportImportFileHelper.validateImportPortletInfo(
+		return _exportImportHelper.validateImportPortletInfo(
 			exportImportConfiguration, inputStream);
 	}
 
@@ -378,7 +377,7 @@ public class ExportImportMVCActionCommand extends BaseMVCActionCommand {
 				PermissionThreadLocal.getPermissionChecker(), sourceGroupId,
 				ActionKeys.EXPORT_IMPORT_PORTLET_INFO);
 
-			_exportImportFileHelper.exportPortletInfoAsFileInBackground(
+			_exportImportHelper.exportPortletInfoAsFileInBackground(
 				_portal.getUserId(actionRequest), exportImportConfiguration);
 		}
 		catch (Exception exception) {
@@ -407,9 +406,6 @@ public class ExportImportMVCActionCommand extends BaseMVCActionCommand {
 	@Reference
 	private ExportImportConfigurationSettingsMapFactory
 		_exportImportConfigurationSettingsMapFactory;
-
-	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;

@@ -14,7 +14,6 @@ import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUti
 import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
@@ -123,7 +122,7 @@ public class LayoutStagingBackgroundTaskExecutor
 
 			initThreadLocals(sourceGroupId, privateLayout);
 
-			file = _exportImportFileHelper.exportLayoutsAsFile(
+			file = _exportImportHelper.exportLayoutsAsFile(
 				exportImportConfiguration);
 
 			markBackgroundTask(
@@ -249,9 +248,6 @@ public class LayoutStagingBackgroundTaskExecutor
 	private DLAppHelperLocalService _dLAppHelperLocalService;
 
 	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
-
-	@Reference
 	private ExportImportHelper _exportImportHelper;
 
 	@Reference
@@ -284,16 +280,16 @@ public class LayoutStagingBackgroundTaskExecutor
 
 		@Override
 		public MissingReferences call() throws PortalException {
-			_exportImportFileHelper.importLayoutsDataDeletions(
+			_exportImportHelper.importLayoutsDataDeletions(
 				_exportImportConfiguration, _file);
 
 			MissingReferences missingReferences =
-				_exportImportFileHelper.validateImportLayoutsFile(
+				_exportImportHelper.validateImportLayoutsFile(
 					_exportImportConfiguration, _file);
 
 			markBackgroundTask(_backgroundTaskId, "validated");
 
-			_exportImportFileHelper.importLayouts(
+			_exportImportHelper.importLayouts(
 				_exportImportConfiguration, _file);
 
 			_initLayoutSetBranches(_userId, _sourceGroupId, _targetGroupId);

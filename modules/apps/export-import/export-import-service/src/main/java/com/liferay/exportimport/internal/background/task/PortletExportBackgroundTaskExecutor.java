@@ -6,8 +6,8 @@
 package com.liferay.exportimport.internal.background.task;
 
 import com.liferay.exportimport.internal.background.task.display.PortletExportImportBackgroundTaskDisplay;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
@@ -78,6 +78,6 @@ public class PortletExportBackgroundTaskExecutor
 	private BackgroundTaskManager _backgroundTaskManager;
 
 	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
+	private ExportImportHelper _exportImportFileHelper;
 
 }

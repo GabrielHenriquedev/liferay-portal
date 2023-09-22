@@ -15,7 +15,6 @@ import com.liferay.exportimport.kernel.lar.UserIdStrategy;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.background.task.util.comparator.BackgroundTaskCreateDateComparator;
@@ -746,7 +745,7 @@ public class SitesImpl implements Sites {
 		File file = null;
 
 		try {
-			file = _exportImportFileHelper.exportLayoutsAsFile(
+			file = _exportImportHelper.exportLayoutsAsFile(
 				exportImportConfiguration);
 		}
 		catch (PortalException portalException) {
@@ -952,7 +951,7 @@ public class SitesImpl implements Sites {
 				importLayoutSettingsMap, WorkflowConstants.STATUS_DRAFT,
 				new ServiceContext());
 
-		_exportImportFileHelper.importLayoutSetPrototypeInBackground(
+		_exportImportHelper.importLayoutSetPrototypeInBackground(
 			user.getUserId(), exportImportConfiguration, file);
 	}
 
@@ -1189,7 +1188,7 @@ public class SitesImpl implements Sites {
 			return;
 		}
 
-		_exportImportFileHelper.mergeLayoutSetPrototypeInBackground(
+		_exportImportHelper.mergeLayoutSetPrototypeInBackground(
 			user.getUserId(), layoutSet.getGroupId(),
 			exportImportConfiguration);
 	}
@@ -1363,9 +1362,6 @@ public class SitesImpl implements Sites {
 	@Reference
 	private ExportImportConfigurationLocalService
 		_exportImportConfigurationLocalService;
-
-	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;

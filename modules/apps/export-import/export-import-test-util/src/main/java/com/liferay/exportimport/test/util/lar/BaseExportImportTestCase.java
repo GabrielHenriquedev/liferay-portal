@@ -12,11 +12,11 @@ import com.liferay.asset.link.service.AssetLinkLocalServiceUtil;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.lar.ExportImportClassedModelUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelperUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -79,7 +79,7 @@ public abstract class BaseExportImportTestCase {
 						importLayoutSettingsMap, WorkflowConstants.STATUS_DRAFT,
 						new ServiceContext());
 
-			ExportImportFileHelperUtil.importLayouts(
+			ExportImportHelperUtil.importLayouts(
 				exportImportConfiguration, larFile);
 		}
 	}
@@ -195,7 +195,7 @@ public abstract class BaseExportImportTestCase {
 						ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT,
 						exportLayoutSettingsMap);
 
-			larFile = ExportImportFileHelperUtil.exportLayoutsAsFile(
+			larFile = ExportImportHelperUtil.exportLayoutsAsFile(
 				exportImportConfiguration);
 		}
 	}

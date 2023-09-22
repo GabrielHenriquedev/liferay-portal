@@ -5,6 +5,7 @@
 
 package com.liferay.exportimport.kernel.lar;
 
+import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
@@ -18,6 +19,7 @@ import com.liferay.portal.kernel.zip.ZipWriter;
 
 import java.io.File;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -273,6 +275,225 @@ public class ExportImportHelperUtil {
 		Document document, ManifestSummary manifestSummary) {
 
 		_exportImportHelper.writeManifestSummary(document, manifestSummary);
+	}
+
+	public static File exportLayoutsAsFile(
+		ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		return _exportImportHelper.exportLayoutsAsFile(
+			exportImportConfiguration);
+	}
+
+	public static long exportLayoutsAsFileInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		return _exportImportHelper.exportLayoutsAsFileInBackground(
+			userId, exportImportConfiguration);
+	}
+
+	public static long exportLayoutsAsFileInBackground(
+		long userId, long exportImportConfigurationId)
+		throws PortalException {
+
+		return _exportImportHelper.exportLayoutsAsFileInBackground(
+			userId, exportImportConfigurationId);
+	}
+
+	public static File exportPortletInfoAsFile(
+		ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		return _exportImportHelper.exportPortletInfoAsFile(
+			exportImportConfiguration);
+	}
+
+	public static long exportPortletInfoAsFileInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		return _exportImportHelper.exportPortletInfoAsFileInBackground(
+			userId, exportImportConfiguration);
+	}
+
+	public static long exportPortletInfoAsFileInBackground(
+		long userId, long exportImportConfigurationId)
+		throws PortalException {
+
+		return _exportImportHelper.exportPortletInfoAsFileInBackground(
+			userId, exportImportConfigurationId);
+	}
+
+	public static void importLayouts(
+		ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		_exportImportHelper.importLayouts(exportImportConfiguration, file);
+	}
+
+	public static void importLayouts(
+		ExportImportConfiguration exportImportConfiguration,
+		InputStream inputStream)
+		throws PortalException {
+
+		_exportImportHelper.importLayouts(
+			exportImportConfiguration, inputStream);
+	}
+
+	public static void importLayoutsDataDeletions(
+		ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		_exportImportHelper.importLayoutsDataDeletions(
+			exportImportConfiguration, file);
+	}
+
+	public static long importLayoutSetPrototypeInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration,
+		File file)
+		throws PortalException {
+
+		return _exportImportHelper.importLayoutSetPrototypeInBackground(
+			userId, exportImportConfiguration, file);
+	}
+
+	public static long importLayoutsInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration,
+		File file)
+		throws PortalException {
+
+		return _exportImportHelper.importLayoutSetPrototypeInBackground(
+			userId, exportImportConfiguration, file);
+	}
+
+	public static long importLayoutsInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration,
+		InputStream inputStream)
+		throws PortalException {
+
+		return _exportImportHelper.importLayoutsInBackground(
+			userId, exportImportConfiguration, inputStream);
+	}
+
+	public static long importLayoutsInBackground(
+		long userId, long exportImportConfigurationId, File file)
+		throws PortalException {
+
+		return _exportImportHelper.importLayoutsInBackground(
+			userId, exportImportConfigurationId, file);
+	}
+
+	public static long importLayoutsInBackground(
+		long userId, long exportImportConfigurationId,
+		InputStream inputStream)
+		throws PortalException {
+
+		return _exportImportHelper.importLayoutsInBackground(
+			userId, exportImportConfigurationId, inputStream);
+	}
+
+	public static void importPortletDataDeletions(
+		ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		_exportImportHelper.importPortletDataDeletions(
+			exportImportConfiguration, file);
+	}
+
+	public static void importPortletInfo(
+		ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		_exportImportHelper.importPortletInfo(
+			exportImportConfiguration, file);
+	}
+
+	public static void importPortletInfo(
+		ExportImportConfiguration exportImportConfiguration,
+		InputStream inputStream)
+		throws PortalException {
+
+		_exportImportHelper.importPortletInfo(
+			exportImportConfiguration, inputStream);
+	}
+
+	public static long importPortletInfoInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration,
+		File file)
+		throws PortalException {
+
+		return _exportImportHelper.importLayoutsInBackground(
+			userId, exportImportConfiguration, file);
+	}
+
+	public static long importPortletInfoInBackground(
+		long userId, ExportImportConfiguration exportImportConfiguration,
+		InputStream inputStream)
+		throws PortalException {
+
+		return _exportImportHelper.importPortletInfoInBackground(
+			userId, exportImportConfiguration, inputStream);
+	}
+
+	public static long importPortletInfoInBackground(
+		long userId, long exportImportConfigurationId, File file)
+		throws PortalException {
+
+		return _exportImportHelper.importPortletInfoInBackground(
+			userId, exportImportConfigurationId, file);
+	}
+
+	public static long importPortletInfoInBackground(
+		long userId, long exportImportConfigurationId,
+		InputStream inputStream)
+		throws PortalException {
+
+		return _exportImportHelper.importPortletInfoInBackground(
+			userId, exportImportConfigurationId, inputStream);
+	}
+
+	public static long mergeLayoutSetPrototypeInBackground(
+		long userId, long groupId,
+		ExportImportConfiguration exportImportConfiguration)
+		throws PortalException {
+
+		return _exportImportHelper.mergeLayoutSetPrototypeInBackground(
+			userId, groupId, exportImportConfiguration);
+	}
+
+	public static MissingReferences validateImportLayoutsFile(
+		ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		return _exportImportHelper.validateImportLayoutsFile(
+			exportImportConfiguration, file);
+	}
+
+	public static MissingReferences validateImportLayoutsFile(
+		ExportImportConfiguration exportImportConfiguration,
+		InputStream inputStream)
+		throws PortalException {
+
+		return _exportImportHelper.validateImportLayoutsFile(
+			exportImportConfiguration, inputStream);
+	}
+
+	public static MissingReferences validateImportPortletInfo(
+		ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		return _exportImportHelper.validateImportLayoutsFile(
+			exportImportConfiguration, file);
+	}
+
+	public static MissingReferences validateImportPortletInfo(
+		ExportImportConfiguration exportImportConfiguration,
+		InputStream inputStream)
+		throws PortalException {
+
+		return _exportImportHelper.validateImportLayoutsFile(
+			exportImportConfiguration, inputStream);
 	}
 
 	private static volatile ExportImportHelper _exportImportHelper =

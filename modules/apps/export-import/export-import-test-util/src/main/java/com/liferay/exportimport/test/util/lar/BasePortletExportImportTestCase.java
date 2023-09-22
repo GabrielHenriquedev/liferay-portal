@@ -15,6 +15,7 @@ import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationPa
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
@@ -23,7 +24,6 @@ import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycle
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelperUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LocaleException;
@@ -415,7 +415,7 @@ public abstract class BasePortletExportImportTestCase
 			exportImportConfiguration);
 
 		try {
-			larFile = ExportImportFileHelperUtil.exportPortletInfoAsFile(
+			larFile = ExportImportHelperUtil.exportPortletInfoAsFile(
 				exportImportConfiguration);
 
 			importedLayout = LayoutTestUtil.addTypePortletLayout(importedGroup);
@@ -444,10 +444,10 @@ public abstract class BasePortletExportImportTestCase
 				ExportImportConfigurationLocalServiceUtil.
 					updateExportImportConfiguration(exportImportConfiguration);
 
-			ExportImportFileHelperUtil.importPortletDataDeletions(
+			ExportImportHelperUtil.importPortletDataDeletions(
 				exportImportConfiguration, larFile);
 
-			ExportImportFileHelperUtil.importPortletInfo(
+			ExportImportHelperUtil.importPortletInfo(
 				exportImportConfiguration, larFile);
 
 			ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(

@@ -13,7 +13,6 @@ import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelperUtil;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
@@ -192,7 +191,7 @@ public class StagingLocalizationTest {
 						TYPE_PUBLISH_LAYOUT_LOCAL,
 					publishLayoutLocalSettingsMap);
 
-		File file = ExportImportFileHelperUtil.exportLayoutsAsFile(
+		File file = ExportImportHelperUtil.exportLayoutsAsFile(
 			exportImportConfiguration);
 
 		LanguageUtil.init();
@@ -200,8 +199,7 @@ public class StagingLocalizationTest {
 		CompanyTestUtil.resetCompanyLocales(
 			TestPropsValues.getCompanyId(), languageIds, defaultLanguageId);
 
-		ExportImportFileHelperUtil.importLayouts(
-			exportImportConfiguration, file);
+		ExportImportHelperUtil.importLayouts(exportImportConfiguration, file);
 
 		JournalArticleResource articleResource =
 			JournalArticleResourceLocalServiceUtil.

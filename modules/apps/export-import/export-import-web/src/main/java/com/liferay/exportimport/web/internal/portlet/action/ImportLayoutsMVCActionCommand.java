@@ -19,7 +19,6 @@ import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.exportimport.kernel.util.ExportImportFileHelper;
 import com.liferay.portal.kernel.exception.LayoutPrototypeException;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -193,7 +192,7 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 			PermissionThreadLocal.getPermissionChecker(), targetGroupId,
 			ActionKeys.EXPORT_IMPORT_LAYOUTS);
 
-		_exportImportFileHelper.importLayoutsInBackground(
+		_exportImportHelper.importLayoutsInBackground(
 			_portal.getUserId(actionRequest), exportImportConfiguration,
 			inputStream);
 	}
@@ -274,7 +273,7 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 			PermissionThreadLocal.getPermissionChecker(), targetGroupId,
 			ActionKeys.EXPORT_IMPORT_LAYOUTS);
 
-		return _exportImportFileHelper.validateImportLayoutsFile(
+		return _exportImportHelper.validateImportLayoutsFile(
 			exportImportConfiguration, inputStream);
 	}
 
@@ -294,9 +293,6 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 	@Reference
 	private ExportImportConfigurationSettingsMapFactory
 		_exportImportConfigurationSettingsMapFactory;
-
-	@Reference
-	private ExportImportFileHelper _exportImportFileHelper;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;

@@ -5,6 +5,7 @@
 
 package com.liferay.exportimport.kernel.lar;
 
+import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
@@ -16,6 +17,7 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.zip.ZipWriter;
 
 import java.io.File;
+import java.io.InputStream;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,30 @@ public interface ExportImportHelper {
 
 	public static final String TEMP_FOLDER_NAME =
 		ExportImportHelper.class.getName();
+
+	public File exportLayoutsAsFile(
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
+
+	public long exportLayoutsAsFileInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
+
+	public long exportLayoutsAsFileInBackground(
+			long userId, long exportImportConfigurationId)
+		throws PortalException;
+
+	public File exportPortletInfoAsFile(
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
+
+	public long exportPortletInfoAsFileInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
+
+	public long exportPortletInfoAsFileInBackground(
+			long userId, long exportImportConfigurationId)
+		throws PortalException;
 
 	public long[] getAllLayoutIds(long groupId, boolean privateLayout);
 
@@ -138,6 +164,75 @@ public interface ExportImportHelper {
 	public UserIdStrategy getUserIdStrategy(long userId, String userIdStrategy)
 		throws PortalException;
 
+	public void importLayouts(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public void importLayouts(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public void importLayoutsDataDeletions(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public long importLayoutSetPrototypeInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			File file)
+		throws PortalException;
+
+	public long importLayoutsInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			File file)
+		throws PortalException;
+
+	public long importLayoutsInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public long importLayoutsInBackground(
+			long userId, long exportImportConfigurationId, File file)
+		throws PortalException;
+
+	public long importLayoutsInBackground(
+			long userId, long exportImportConfigurationId,
+			InputStream inputStream)
+		throws PortalException;
+
+	public void importPortletDataDeletions(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public void importPortletInfo(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public void importPortletInfo(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public long importPortletInfoInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			File file)
+		throws PortalException;
+
+	public long importPortletInfoInBackground(
+			long userId, ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public long importPortletInfoInBackground(
+			long userId, long exportImportConfigurationId, File file)
+		throws PortalException;
+
+	public long importPortletInfoInBackground(
+			long userId, long exportImportConfigurationId,
+			InputStream inputStream)
+		throws PortalException;
+
 	public boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext,
 		StagedModel referenceStagedModel);
@@ -156,6 +251,11 @@ public interface ExportImportHelper {
 	public boolean isReferenceWithinExportScope(
 		PortletDataContext portletDataContext, StagedModel stagedModel);
 
+	public long mergeLayoutSetPrototypeInBackground(
+			long userId, long groupId,
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
+
 	public void processBackgroundTaskManifestSummary(
 			long userId, long sourceGroupId, BackgroundTask backgroundTask,
 			File file)
@@ -163,6 +263,24 @@ public interface ExportImportHelper {
 
 	public void setPortletScope(
 		PortletDataContext portletDataContext, Element portletElement);
+
+	public MissingReferences validateImportLayoutsFile(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public MissingReferences validateImportLayoutsFile(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public MissingReferences validateImportPortletInfo(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public MissingReferences validateImportPortletInfo(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
 
 	public MissingReferences validateMissingReferences(
 			PortletDataContext portletDataContext)
