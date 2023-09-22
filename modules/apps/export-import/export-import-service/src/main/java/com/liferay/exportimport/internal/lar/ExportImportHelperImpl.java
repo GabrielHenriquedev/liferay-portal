@@ -10,7 +10,6 @@ import com.liferay.document.library.kernel.util.DLValidatorUtil;
 import com.liferay.exportimport.constants.ExportImportBackgroundTaskContextMapConstants;
 import com.liferay.exportimport.controller.PortletExportController;
 import com.liferay.exportimport.controller.PortletImportController;
-import com.liferay.exportimport.internal.util.ExportImportFileHelperImpl;
 import com.liferay.exportimport.kernel.background.task.BackgroundTaskExecutorNames;
 import com.liferay.exportimport.kernel.controller.ExportController;
 import com.liferay.exportimport.kernel.controller.ImportController;
@@ -168,7 +167,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -226,7 +225,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -849,7 +848,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -873,7 +872,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		catch (IOException ioException) {
 			ExportImportIOException exportImportIOException =
 				new ExportImportIOException(
-					ExportImportFileHelperImpl.class.getName(), ioException);
+					ExportImportHelperImpl.class.getName(), ioException);
 
 			if (file != null) {
 				exportImportIOException.setFileName(file.getName());
@@ -922,7 +921,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -995,7 +994,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		catch (IOException ioException) {
 			ExportImportIOException exportImportIOException =
 				new ExportImportIOException(
-					ExportImportFileHelperImpl.class.getName(), ioException);
+					ExportImportHelperImpl.class.getName(), ioException);
 
 			if (file != null) {
 				exportImportIOException.setFileName(file.getName());
@@ -1066,7 +1065,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -1112,7 +1111,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -1136,7 +1135,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		catch (IOException ioException) {
 			ExportImportIOException exportImportIOException =
 				new ExportImportIOException(
-					ExportImportFileHelperImpl.class.getName(), ioException);
+					ExportImportHelperImpl.class.getName(), ioException);
 
 			if (file != null) {
 				exportImportIOException.setFileName(file.getName());
@@ -1197,7 +1196,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		catch (IOException ioException) {
 			ExportImportIOException exportImportIOException =
 				new ExportImportIOException(
-					ExportImportFileHelperImpl.class.getName(), ioException);
+					ExportImportHelperImpl.class.getName(), ioException);
 
 			if (file != null) {
 				exportImportIOException.setFileName(file.getName());
@@ -1618,7 +1617,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -1642,7 +1641,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		catch (IOException ioException) {
 			ExportImportIOException exportImportIOException =
 				new ExportImportIOException(
-					ExportImportFileHelperImpl.class.getName(), ioException);
+					ExportImportHelperImpl.class.getName(), ioException);
 
 			if (file != null) {
 				exportImportIOException.setFileName(file.getName());
@@ -1688,7 +1687,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					exception.getLocalizedMessage(), exception);
 
 			exportImportRuntimeException.setClassName(
-				ExportImportFileHelperImpl.class.getName());
+				ExportImportHelperImpl.class.getName());
 
 			throw exportImportRuntimeException;
 		}
@@ -1712,7 +1711,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		catch (IOException ioException) {
 			ExportImportIOException exportImportIOException =
 				new ExportImportIOException(
-					ExportImportFileHelperImpl.class.getName(), ioException);
+					ExportImportHelperImpl.class.getName(), ioException);
 
 			if (file != null) {
 				exportImportIOException.setFileName(file.getName());
@@ -2231,7 +2230,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 	private static final Snapshot<ImportController>
 		_layoutImportControllerSnapshot = new Snapshot<>(
-			ExportImportFileHelperImpl.class, ImportController.class,
+			ExportImportHelperImpl.class, ImportController.class,
 			"(model.class.name=com.liferay.portal.kernel.model.Layout)", true);
 
 	@Reference
